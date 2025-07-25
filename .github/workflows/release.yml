@@ -8,6 +8,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for creating releases
     
     steps:
       - name: Checkout code
@@ -88,19 +90,17 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/crawl4ai:${{ steps.get_version.outputs.VERSION }}
-            ${{ secrets.DOCKER_USERNAME }}/crawl4ai:${{ steps.versions.outputs.MINOR }}
-            ${{ secrets.DOCKER_USERNAME }}/crawl4ai:${{ steps.versions.outputs.MAJOR }}
-            ${{ secrets.DOCKER_USERNAME }}/crawl4ai:latest
+            unclecode/crawl4ai:${{ steps.get_version.outputs.VERSION }}
+            unclecode/crawl4ai:${{ steps.versions.outputs.MINOR }}
+            unclecode/crawl4ai:${{ steps.versions.outputs.MAJOR }}
+            unclecode/crawl4ai:latest
           platforms: linux/amd64,linux/arm64
       
       - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.get_version.outputs.VERSION }}
-          release_name: Release v${{ steps.get_version.outputs.VERSION }}
+          name: Release v${{ steps.get_version.outputs.VERSION }}
           body: |
             ## 🎉 Crawl4AI v${{ steps.get_version.outputs.VERSION }} Released!
             
@@ -113,14 +113,15 @@ jobs:
             
             **Docker:**
             ```bash
-            docker pull ${{ secrets.DOCKER_USERNAME }}/crawl4ai:${{ steps.get_version.outputs.VERSION }}
-            docker pull ${{ secrets.DOCKER_USERNAME }}/crawl4ai:latest
+            docker pull unclecode/crawl4ai:${{ steps.get_version.outputs.VERSION }}
+            docker pull unclecode/crawl4ai:latest
             ```
             
             ### 📝 What's Changed
             See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
           draft: false
           prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Summary
         run: |
@@ -132,10 +133,10 @@ jobs:
           echo "- Install: \`pip install crawl4ai==${{ steps.get_version.outputs.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🐳 Docker Images" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ secrets.DOCKER_USERNAME }}/crawl4ai:${{ steps.get_version.outputs.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ secrets.DOCKER_USERNAME }}/crawl4ai:${{ steps.versions.outputs.MINOR }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ secrets.DOCKER_USERNAME }}/crawl4ai:${{ steps.versions.outputs.MAJOR }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ secrets.DOCKER_USERNAME }}/crawl4ai:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`unclecode/crawl4ai:${{ steps.get_version.outputs.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`unclecode/crawl4ai:${{ steps.versions.outputs.MINOR }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`unclecode/crawl4ai:${{ steps.versions.outputs.MAJOR }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`unclecode/crawl4ai:latest\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📋 GitHub Release" >> $GITHUB_STEP_SUMMARY
           echo "https://github.com/${{ github.repository }}/releases/tag/v${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
